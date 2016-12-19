@@ -1,10 +1,16 @@
 from nbt import nbt
 
 
-LENGTH_STRING = "Length"
-WIDTH_STRING = "Width"
-HEIGHT_STRING = "Height"
-SCHEMATIC_MAPPING = "SchematicaMapping"
+LENGTH_STRING = 'Length'
+WIDTH_STRING = 'Width'
+HEIGHT_STRING = 'Height'
+SCHEMATIC_MAPPING = 'SchematicaMapping'
+BLOCKS_STRING = 'Blocks'
+DATA_STRING = 'Data'
+ICON_STRING = 'Icon'
+ENTITIES_STRING = 'Entities'
+TILE_ENTITIES_STRING = 'TileEntities'
+MATERIALS_STRING = 'Materials'
 
 
 class Schematic:
