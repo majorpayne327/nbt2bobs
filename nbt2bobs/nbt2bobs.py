@@ -51,6 +51,7 @@ class Block:
     x = 0
     y = 0
     z = 0
+    metadata = 0
 
     @property
     def coordinates(self):
@@ -63,7 +64,7 @@ class Block:
         self.z = z
 
     def __repr__(self):
-        return "{0} placed at ({1}, {2}, {3})".format(self.name, self.x, self.y, self.z)
+        return "{0} placed at ({1}, {2}, {3}) with metadata {4:08b}".format(self.name, self.x, self.y, self.z, self.metadata)
 
 
 def convert_nbt_tag_to_int(tag):
@@ -91,7 +92,8 @@ def retrieve_block_dictionary(nbt_file):
 def build_block_information(nbt_file, schematic):
 
     blocks_dictionary = retrieve_block_dictionary(nbt_file)
-    nbt_layout = nbt_file.get(BLOCKS_STRING)
+    nbt_blocks = nbt_file.get(BLOCKS_STRING)
+    nbt_data = nbt_file.get(DATA_STRING)
 
     length, width, height = schematic.dimensions
     blocks = []
@@ -100,11 +102,11 @@ def build_block_information(nbt_file, schematic):
         for x in range(0, length):
             for y in range(0, height):
                 coordinate = (y * length + z) * width + x
+                layout[x][y][z] = nbt_blocks[coordinate]
 
-                layout[x][y][z] = nbt_layout[coordinate]
-
-                block_id = nbt_layout[coordinate]
+                block_id = nbt_blocks[coordinate]
                 block = Block(blocks_dictionary[block_id], x, y, z)
+                block.metadata = nbt_data[coordinate]
                 blocks.append(block)
 
     schematic.blocks_dictionary = blocks_dictionary
