@@ -1,6 +1,9 @@
 import numpy
+import jinja2
 from nbt import nbt
 
+
+MATERIALS_STRING = 'Materials'
 LENGTH_STRING = 'Length'
 WIDTH_STRING = 'Width'
 HEIGHT_STRING = 'Height'
@@ -10,7 +13,8 @@ DATA_STRING = 'Data'
 ICON_STRING = 'Icon'
 ENTITIES_STRING = 'Entities'
 TILE_ENTITIES_STRING = 'TileEntities'
-MATERIALS_STRING = 'Materials'
+
+env = jinja2.Environment(loader=jinja2.PackageLoader('nbt2bobs', 'templates'))
 
 
 class Schematic:
@@ -48,6 +52,7 @@ class Schematic:
 
 class Block:
     name = ''
+    id = 0
     x = 0
     y = 0
     z = 0
@@ -57,11 +62,15 @@ class Block:
     def coordinates(self):
         return self.x, self.y, self.z
 
-    def __init__(self, name, x, y, z):
+    def __init__(self, id, name, x, y, z):
+        self.id = id
         self.name = name
         self.x = x
         self.y = y
         self.z = z
+
+    def get_bo3_definition(self):
+        return "Block({0}, {1}, {2}, {3}:{4})".format(self.x, self.y, self.z, self.id, self.metadata)
 
     def __repr__(self):
         return "{0} placed at ({1}, {2}, {3}) with metadata {4:08b}".format(self.name, self.x, self.y, self.z, self.metadata)
@@ -105,7 +114,7 @@ def build_block_information(nbt_file, schematic):
                 layout[x][y][z] = nbt_blocks[coordinate]
 
                 block_id = nbt_blocks[coordinate]
-                block = Block(blocks_dictionary[block_id], x, y, z)
+                block = Block(block_id, blocks_dictionary[block_id], x, y, z)
                 block.metadata = nbt_data[coordinate]
                 blocks.append(block)
 
@@ -120,13 +129,16 @@ def main():
     filename = input("What is the file you want to load? (.nbt|.schematic) ")
     nbt_file = nbt.NBTFile(filename, 'rb')
 
-    schematic = Schematic()
-    schematic.type = nbt_file.name
-    schematic.length, schematic.width, schematic.height = retrieve_dimensions(nbt_file)
+    if nbt_file.filename.split('.')[-1] == 'schematic':
+        schematic = Schematic()
+        schematic.type = "{0} - {1}".format(nbt_file.get(MATERIALS_STRING, "No Material"), nbt_file.name)
+        schematic.length, schematic.width, schematic.height = retrieve_dimensions(nbt_file)
 
-    build_block_information(nbt_file, schematic)
+        build_block_information(nbt_file, schematic)
 
-    print(schematic)
+        template = env.get_template('bo3.template')
+        print(template.render(author="nbt2bobs", description="Test Description", writemode="WriteDisable",
+                              outsidesourceblock='dontPlace', schematic=schematic))
 
 
 main()
