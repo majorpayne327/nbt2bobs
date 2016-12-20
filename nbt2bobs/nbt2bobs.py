@@ -108,13 +108,12 @@ def build_block_information(nbt_file, schematic):
 
     length, width, height = schematic.dimensions
     blocks = []
-    layout = numpy.zeros((length, height, width), dtype=numpy.int16)
+    layout = numpy.zeros((width, height, length), dtype=numpy.int16)
 
     for y in range(0, height):
         for z in range(0, length):
             for x in range(0, width):
                 coordinate = (y * length + z) * width + x
-                print(x, y, z, coordinate)
                 block_id = nbt_blocks[coordinate]
                 if block_id != IGNORE_BLOCK_ID:
                     layout[x][y][z] = block_id
@@ -133,7 +132,6 @@ def build_block_information(nbt_file, schematic):
 
 
 def main():
-    global IGNORE_BLOCK_ID
 
     filename = input("What is the file you want to load? (.nbt|.schematic) ")
     # IGNORE_BLOCK_ID = int(input("What is the block id you want to ignore? ") or -1)
@@ -154,5 +152,5 @@ def main():
         with open('test_bo3.b03', 'w') as f:
             f.write(bo3)
 
-
-main()
+if __name__ == '__main__':
+    main()
