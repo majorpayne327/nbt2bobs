@@ -20,6 +20,10 @@ Version:3
 # The settings mode, WriteAll, WriteWithoutComments or WriteDisable. See WorldConfig.
 SettingsMode:{{ writemode }}
 
+# BO3 Object Tutorials
+# http://mctcp.craftrealms.org/the-bo3-basics/
+# https://github.com/MCTCP/TerrainControl/wiki/BO3-objects
+
 #######################################################################
 # +-----------------------------------------------------------------+ #
 # |                          Main settings                          | #
@@ -45,9 +49,38 @@ SpawnHeight:randomY
 MinHeight:0
 MaxHeight:64
 
+# The offset from the spawn height to spawn this BO3
+# Ex. SpawnHeight = highestSolidBlock, SpawnHeightOffset = 3; This object will spawn 3 blocks above the highest solid block
+SpawnHeightOffset: 0
+
+# A random amount to offset the spawn location from the spawn offset height
+# Ex. SpawnHeightOffset = 3, SpawnHeightVariance = 3; This object will spawn 3 to 6 blocks above the original spot it would have spawned
+SpawnHeightVariance: 0
+
 # When spawned with the UseWorld keyword, this BO3 should NOT spawn in the following biomes.
 # If you write the BO3 name directly in the BiomeConfigs, this will be ignored.
 ExcludedBiomes:
+
+#######################################################################
+# +-----------------------------------------------------------------+ #
+# |                        Extrusion settings                       | #
+# +-----------------------------------------------------------------+ #
+#######################################################################
+
+# The style of extrusion you wish to use - BottomDown, TopUp, None (Default)
+ExtrudeMode: None
+
+# The blocks to extrude your BO3 through
+ExtrudeThroughBlocks: AIR
+
+# The height limits for the BO3.
+MinHeight: 0
+MaxHeight: 0
+
+# Objects can have other objects attacthed to it: branches. Branches can also
+# have branches attached to it, which can also have branches, etc. This is the
+# maximum branch depth for this objects.
+MaxBranchDepth: 10
 
 #######################################################################
 # +-----------------------------------------------------------------+ #
@@ -80,4 +113,46 @@ OutsideSourceBlock:{{ outsidesourceblock }}
 #######################################################################
 
 # Require a condition at a certain location in order for the BO3 to be spawned.
-# BlockCheck(x,y,z,id[.data][,id[.data][,...]])
+# BlockCheck(x,y,z,BlockName[,BlockName[,...]]) - one of the blocks must be at the location
+# BlockCheckNot(x,y,z,BlockName[,BlockName[,...]]) - all the blocks must not be at the location
+# LightCheck(x,y,z,minLightLevel,maxLightLevel) - light must be between min and max (inclusive)
+
+# You can use "Solid" as a BlockName for matching all solid blocks or "All" to match all blocks that aren't air.
+
+# Examples:
+# BlockCheck(0,-1,0,GRASS,DIRT) Require grass or dirt just below the object
+# BlockCheck(0,-1,0,Solid) Require any solid block just below the object
+# BlockCheck(0,-1,0,WOOL) Require any type of wool just below the object
+# BlockCheck(0,-1,0,WOOL:0) Require white wool just below the object
+# BlockCheckNot(0,-1,0,WOOL:0) Require that there is no white wool below the object
+# LightCheck(0,0,0,0,1) Require almost complete darkness just below the object
+
+# Keep it as simple as possibile! Do not add the same blockcheck twice
+# Example: Dont do it like this:
+
+# BlockCheck(0,-1,0,GRASS,DIRT)
+# BlockCheck(0,-3,0,STONE)
+
+# But like this:
+
+# BlockCheck(0,-1,0,GRASS,DIRT)
+
+#######################################################################
+# +-----------------------------------------------------------------+ #
+# | Branches | #
+# +-----------------------------------------------------------------+ #
+#######################################################################
+
+# Branches are objects that will spawn when this object spawns when it is used in
+# the CustomStructure resource. Branches can also have branches, making complex
+# structures possible. See the wiki for more details.
+
+# Regular Branches spawn each branch with an independent chance of spawning.
+# Branch(x,y,z,branchName,rotation,chance[,anotherBranchName,rotation,chance[,...]][IndividualChance])
+# branchName - name of the object to spawn.
+# rotation - NORTH, SOUTH, EAST or WEST.
+# IndividualChance - The chance each branch has to spawn, assumed to be 100 when left blank
+
+# Weighted Branches spawn branches with a dependent chance of spawning.
+# WeightedBranch(x,y,z,branchName,rotation,chance[,anotherBranchName,rotation,chance[,...]][MaxChanceOutOf])
+# MaxChanceOutOf - The chance all branches have to spawn out of, assumed to be 100 when left blank

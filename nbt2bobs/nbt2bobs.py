@@ -4,15 +4,17 @@ from nbt import nbt
 
 
 MATERIALS_STRING = 'Materials'
-LENGTH_STRING = 'Length'
-WIDTH_STRING = 'Width'
-HEIGHT_STRING = 'Height'
+LENGTH_STRING = 'Length'  # size along the Z axis
+WIDTH_STRING = 'Width'  # size along the X axis
+HEIGHT_STRING = 'Height'  # size along the Y axis
 SCHEMATIC_MAPPING = 'SchematicaMapping'
 BLOCKS_STRING = 'Blocks'
 DATA_STRING = 'Data'
 ICON_STRING = 'Icon'
 ENTITIES_STRING = 'Entities'
 TILE_ENTITIES_STRING = 'TileEntities'
+
+IGNORE_BLOCK_ID = -1
 
 env = jinja2.Environment(loader=jinja2.PackageLoader('nbt2bobs', 'templates'))
 
@@ -107,16 +109,21 @@ def build_block_information(nbt_file, schematic):
     length, width, height = schematic.dimensions
     blocks = []
     layout = numpy.zeros((length, height, width), dtype=numpy.int16)
-    for z in range(0, width):
-        for x in range(0, length):
-            for y in range(0, height):
-                coordinate = (y * length + z) * width + x
-                layout[x][y][z] = nbt_blocks[coordinate]
 
+    for y in range(0, height):
+        for z in range(0, length):
+            for x in range(0, width):
+                coordinate = (y * length + z) * width + x
+                print(x, y, z, coordinate)
                 block_id = nbt_blocks[coordinate]
-                block = Block(block_id, blocks_dictionary[block_id], x, y, z)
-                block.metadata = nbt_data[coordinate]
-                blocks.append(block)
+                if block_id != IGNORE_BLOCK_ID:
+                    layout[x][y][z] = block_id
+
+                    block = Block(block_id, blocks_dictionary.get(block_id, "NaN"), x, y, z)
+                    block.metadata = nbt_data[coordinate]
+                    blocks.append(block)
+                else:
+                    layout[x][y][z] = -1
 
     schematic.blocks_dictionary = blocks_dictionary
     schematic.blocks = blocks
@@ -126,7 +133,11 @@ def build_block_information(nbt_file, schematic):
 
 
 def main():
+    global IGNORE_BLOCK_ID
+
     filename = input("What is the file you want to load? (.nbt|.schematic) ")
+    # IGNORE_BLOCK_ID = int(input("What is the block id you want to ignore? ") or -1)
+
     nbt_file = nbt.NBTFile(filename, 'rb')
 
     if nbt_file.filename.split('.')[-1] == 'schematic':
@@ -137,8 +148,11 @@ def main():
         build_block_information(nbt_file, schematic)
 
         template = env.get_template('bo3.template')
-        print(template.render(author="nbt2bobs", description="Test Description", writemode="WriteDisable",
-                              outsidesourceblock='dontPlace', schematic=schematic))
+        bo3 = template.render(author="nbt2bobs", description="Test Description", writemode="WriteDisable",
+                              outsidesourceblock='dontPlace', schematic=schematic)
+
+        with open('test_bo3.b03', 'w') as f:
+            f.write(bo3)
 
 
 main()
